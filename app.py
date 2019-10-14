@@ -121,8 +121,6 @@ find_parser.add_argument('id' , help='Identifant Ã  rechercher')
 insert_parser = action_subparser.add_parser('insert', help='Insere des personnes ou des films')
 insert_parser.add_argument('--firstname' , help='Prenom de l auteur')
 insert_parser.add_argument('--lastname' , help='Nom de l auteur')
-
-
 #movies
 insert_parser.add_argument('--title' , help='Le titre du film')
 insert_parser.add_argument('--original_title' , help='Le titre origianl du film')
@@ -134,12 +132,14 @@ insert_parser.add_argument('--marketing_budget' , help='Le montant du marketing 
 insert_parser.add_argument('--release_date' , help='La date de sortie du film')
 insert_parser.add_argument('--is3d' , help=' un film  3D')
 
+import_parser = action_subparser.add_parser('import', help='Liste les entitÃ©es du contexte')
+import_parser.add_argument('--file' , help='Chemin du fichier exportÃ©')
 
 
 
 args = parser.parse_args()
 print (args)
-
+#exit()
 
 if args.context == "people":
     if args.action == "list":
@@ -174,5 +174,20 @@ if args.context == "movies":
         movies = find("movies", movieId)
         for movie in movies:
             printMovie(movie)
-    if args.action== "insert":
-        insertMovie (args.title, args.original_title, args.synopsis, args.duration, args.rating, args.production_budget, args.marketing_budget, args.release_date, args.is3d)
+    if args.action == "insert":
+        insertMovie (args.title, args.original_title, args.synopsis, args.duration, args.rating, args.production_budget, args.marketing_budget, args.release_date, args.is3d)  
+    if args.action == "import": 
+        with open(args.file, 'r', encoding='utf-8', newline='\n') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:  
+                #print("#{}".format(row['title'])) 
+                #print(row)
+                insertMovie (row['title'], row['original_title'], None, row['duration'], row['rating'], None, None, row['release_date'], 0)
+
+"""                
+                writer = csv.writer(csvfile)
+                writer.writerow(people[0].keys())
+                for person in people:
+                    writer.writerow(person.values())
+                    insertMovie (title, original_title, None, duration, rating, None, None, release_date, 0)
+"""   
