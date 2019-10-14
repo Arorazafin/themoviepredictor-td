@@ -4,12 +4,14 @@
 """
 TheMoviePredictor script
 Author: Arnaud de Mouhy <arnaud@admds.net>
+Modified by Aro Razafindrakola <aro.razafindrakola@gmail.com>
 """
 
 import mysql.connector
 import sys
 import argparse
 import csv
+from datetime import date
 
 def connectToDatabase():
     return mysql.connector.connect(user='predictor', password='predictor',
@@ -62,6 +64,42 @@ def insertPeople (firstname, lastname):
     closeCursor(cursor)
     disconnectDatabase(cnx)
 
+def insertMovie (title,original_title,synopsis,duration,rating,production_budget,marketing_budget,release_date,is3d):
+    cnx = connectToDatabase()
+    cursor = createCursor(cnx)
+    query = ("INSERT INTO `movies`"
+               "(id,title,original_title,synopsis,duration,rating,production_budget,marketing_budget,release_date,is3d)"
+               " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+  
+    id = cursor.lastrowid
+    if release_date == None:
+        release_date = date(9999,1,1)
+    if is3d == None:
+       is3d = 0 
+   # data_movie = (id,'Iron Man','Iron Man',140000000,None,126,'TP', date(2008, 4, 30),0,'')
+
+    """data_movie = {
+    'id': id,
+    'title': title,
+    'original_title' : original_title, 
+    'synopsis': synopsis,
+    'duration' : duration,
+    'rating' : rating,
+    'production_budget': production_budget,
+    'marketing_budget' : marketing_budget,
+    'release_date' : release_date,
+    'is3d' : is3d,
+    }
+    """
+    data_movie = (id,title,original_title, synopsis,duration,rating,production_budget,marketing_budget,release_date,is3d)
+    #print (data_movie)
+    cursor.execute(query, data_movie)
+    cnx.commit()
+    closeCursor(cursor)
+    disconnectDatabase(cnx)
+
+
+
 def printPerson(person):
     print("#{}: {} {}".format(person['id'], person['firstname'], person['lastname']))
 
@@ -80,13 +118,28 @@ list_parser.add_argument('--export' , help='Chemin du fichier exportÃ©')
 find_parser = action_subparser.add_parser('find', help='Trouve une entitÃ© selon un paramÃ¨tre')
 find_parser.add_argument('id' , help='Identifant Ã  rechercher')
 
-insert_parser = action_subparser.add_parser('insert', help='Insere le nom des personnes')
-insert_parser.add_argument('firstname' , help='Prenom de l auteur')
-insert_parser.add_argument('lastname' , help='Nom de l auteur')
+insert_parser = action_subparser.add_parser('insert', help='Insere des personnes ou des films')
+insert_parser.add_argument('--firstname' , help='Prenom de l auteur')
+insert_parser.add_argument('--lastname' , help='Nom de l auteur')
+
+
+#movies
+insert_parser.add_argument('--title' , help='Le titre du film')
+insert_parser.add_argument('--original_title' , help='Le titre origianl du film')
+insert_parser.add_argument('--synopsis' , help='Le synopsis du film')
+insert_parser.add_argument('--duration' , help='La durée du film')
+insert_parser.add_argument('--rating' , help='Le rating du film')
+insert_parser.add_argument('--production_budget' , help='Le montant de la production du film')
+insert_parser.add_argument('--marketing_budget' , help='Le montant du marketing du film')
+insert_parser.add_argument('--release_date' , help='La date de sortie du film')
+insert_parser.add_argument('--is3d' , help=' un film  3D')
+
+
 
 
 args = parser.parse_args()
 print (args)
+
 
 if args.context == "people":
     if args.action == "list":
@@ -121,3 +174,5 @@ if args.context == "movies":
         movies = find("movies", movieId)
         for movie in movies:
             printMovie(movie)
+    if args.action== "insert":
+        insertMovie (args.title, args.original_title, args.synopsis, args.duration, args.rating, args.production_budget, args.marketing_budget, args.release_date, args.is3d)
