@@ -33,11 +33,16 @@ def findQuery(table, id):
 def findAllQuery(table):
     return ("SELECT * FROM {}".format(table))
 
+def insert_people_query(firstname, lastname):
+    return (f"INSERT INTO `people` (`firstname`, `lastname`) VALUES ('{firstname}', '{lastname}');")
+  
+
+
 def find(table, id):
     cnx = connectToDatabase()
     cursor = createCursor(cnx)
     query = findQuery(table, id)
-    cursor.execute(query)
+    cursor.execute(query    )
     results = cursor.fetchall()
     closeCursor(cursor)
     disconnectDatabase(cnx)
@@ -52,7 +57,7 @@ def findAll(table):
     disconnectDatabase(cnx)
     return results
 
-def insertPeople (firstname, lastname):
+"""def insertPeople (firstname, lastname):
     cnx = connectToDatabase()
     cursor = createCursor(cnx)
     query  = ("INSERT INTO people(id, firstname, lastname) VALUES (%s, %s, %s)")
@@ -63,6 +68,16 @@ def insertPeople (firstname, lastname):
     cnx.commit()
     closeCursor(cursor)
     disconnectDatabase(cnx)
+"""
+def insert_people(firstname, lastname):
+    cnx = connectToDatabase()
+    cursor = createCursor(cnx)
+    cursor.execute(insert_people_query(firstname, lastname))
+    people_id = cursor.lastrowid
+    cnx.commit()
+    closeCursor(cursor)
+    disconnectDatabase(cnx)
+    return people_id
 
 def insertMovie (title,original_title,synopsis,duration,rating,production_budget,marketing_budget,release_date,is3d):
     cnx = connectToDatabase()
@@ -159,8 +174,9 @@ if args.context == "people":
         for person in people:
             printPerson(person)
     if args.action == "insert":
-        #print (args.firstname, args.lastname)
-        insertPeople (args.firstname, args.lastname)
+        print (args.firstname, args.lastname)
+        people_id = insert_people(firstname = args.firstname, lastname = args.lastname)
+        print (people_id)
 
 
 
